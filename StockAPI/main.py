@@ -5,7 +5,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 app = FastAPI(title="StockAPI")
-available_countries = stocks.get_stock_countries()
 
 app.add_middleware(
     CORSMiddleware,
@@ -33,6 +32,7 @@ def get_countries(sortby:str="asce"):
 def get_stock(country:str=None):
     if country is not None:
         country = country.lower().strip()
+        available_countries = stocks.get_stock_countries()
         if country not in available_countries:
             detail = {
                 'message':f'country:{country} not available',
@@ -61,3 +61,24 @@ def get_active_countries(stock:str):
     for i in range(len(df)):
         mylist.append(df.iloc[i].to_dict())
     return mylist
+
+def gen_profile(stock,country):
+    try:
+        return stocks.get_stock_company_profile(stock=stock,country=country)
+    except:
+        return JSONResponse(content=f'Sorry, Data Not Found',status_code=status.HTTP_404_NOT_FOUND)
+@app.get('/profile/{stock}/{country}')
+def get_profile(stock:str,country:str):
+    stock = stock.strip().upper()
+    country = country.strip().lower()
+    
+    available_stocks = stocks.get_stocks_list()
+    available_countries = stocks.get_stock_countries()
+    
+    if stock not in available_stocks:
+        return JSONResponse(content=f'Stock:{stock.lower()} Not Found',status_code=status.HTTP_404_NOT_FOUND)
+    
+    if country not in available_countries:
+        return JSONResponse(content=f'Country:{country} Not Found',status_code=status.HTTP_404_NOT_FOUND)
+    
+    return gen_profile(stock,country)
