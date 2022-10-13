@@ -128,25 +128,51 @@ client = TestClient(app)
 #     assert res.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
 #     assert res.json() == 'Sorry, Data Not Found'
     
-def test_get_info():
+# def test_get_info():
+#     # 1.invalid stock 
+#     stock = 'xxxxx'
+#     country = 'united states'
+#     res = client.get(f'/info/{stock}/{country}')
+#     assert res.status_code == status.HTTP_404_NOT_FOUND
+#     assert res.json() == f'Stock:{stock} Not Found'
+#     # 2.invalid country 
+#     stock = 'ba'
+#     country = 'united state'
+#     res = client.get(f'/info/{stock}/{country}')
+#     assert res.status_code == status.HTTP_404_NOT_FOUND
+#     assert res.json() == f'Country:{country} Not Found'
+#     # 3.valid data 
+#     stock = 'ba'
+#     country = 'united states'
+#     res = client.get(f'/info/{stock}/{country}')
+#     assert res.status_code == status.HTTP_200_OK
+#     res.json() == stocks.get_stock_information(stock=stock, country=country, as_json=True)
+#     # # 3.valid data but not exists
+#     # stock = 'ta'
+#     # country = 'argentina'
+#     # res = client.get(f'/info/{stock}/{country}')
+#     # assert res.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+#     # assert res.json() == 'Sorry, Data Not Found'
+    
+def test_get_ohlcv():
     # 1.invalid stock 
     stock = 'xxxxx'
     country = 'united states'
-    res = client.get(f'/info/{stock}/{country}')
+    res = client.get(f'/ohlcv/{stock}/{country}')
     assert res.status_code == status.HTTP_404_NOT_FOUND
     assert res.json() == f'Stock:{stock} Not Found'
     # 2.invalid country 
     stock = 'ba'
     country = 'united state'
-    res = client.get(f'/info/{stock}/{country}')
+    res = client.get(f'/ohlcv/{stock}/{country}')
     assert res.status_code == status.HTTP_404_NOT_FOUND
     assert res.json() == f'Country:{country} Not Found'
     # 3.valid data 
     stock = 'ba'
     country = 'united states'
-    res = client.get(f'/info/{stock}/{country}')
+    res = client.get(f'/ohlcv/{stock}/{country}')
     assert res.status_code == status.HTTP_200_OK
-    res.json() == stocks.get_stock_information(stock=stock, country=country, as_json=True)
+    res.json() == stocks.get_stock_recent_data(stock=stock, country=country, as_json=True)
     # # 3.valid data but not exists
     # stock = 'ta'
     # country = 'argentina'
