@@ -162,4 +162,21 @@ def get_ohlcv(stock:str,country:str):
     
     return gen_ohlcv(stock,country)
 
+def gen_overview(country):
+    try:
+        return stocks.get_stocks_overview(country=country, as_json=True)
+    except:
+        return JSONResponse(content=f'Sorry, Data Not Found',status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@app.get('/overview/{country}')
+def get_overview(country:str):
+    country = country.strip().lower()
+    available_countries = stocks.get_stock_countries()
+    
+    if country not in available_countries:
+        return JSONResponse(content=f'Country:{country} Not Found',status_code=status.HTTP_404_NOT_FOUND)
+    
+    return gen_overview(country)
+
 
