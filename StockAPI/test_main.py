@@ -1,4 +1,4 @@
-import stat
+import calendar
 from investpy import stocks
 from main import app
 from fastapi import status
@@ -68,29 +68,63 @@ client = TestClient(app)
 #         mylist.append(df.iloc[i].to_dict())
 #     assert res_body == mylist
 
-def test_get_profile():
+# def test_get_profile():
+#     # 1.invalid stock 
+#     stock = 'xxxxx'
+#     country = 'united states'
+#     res = client.get(f'/profile/{stock}/{country}')
+#     assert res.status_code == status.HTTP_404_NOT_FOUND
+#     assert res.json() == f'Stock:{stock} Not Found'
+#     # 2.invalid country 
+#     stock = 'ba'
+#     country = 'united state'
+#     res = client.get(f'/profile/{stock}/{country}')
+#     assert res.status_code == status.HTTP_404_NOT_FOUND
+#     assert res.json() == f'Country:{country} Not Found'
+#     # 3.valid data 
+#     stock = 'ba'
+#     country = 'united states'
+#     res = client.get(f'/profile/{stock}/{country}')
+#     assert res.status_code == status.HTTP_200_OK
+#     assert res.json() == stocks.get_stock_company_profile(stock=stock,country=country)
+#     # 3.valid data but not exists
+#     stock = 'ta'
+#     country = 'argentina'
+#     res = client.get(f'/profile/{stock}/{country}')
+#     assert res.status_code == status.HTTP_404_NOT_FOUND
+#     assert res.json() == 'Sorry, Data Not Found'
+    
+def test_get_summary():
     # 1.invalid stock 
     stock = 'xxxxx'
     country = 'united states'
-    res = client.get(f'/profile/{stock}/{country}')
+    res = client.get(f'/summary/{stock}/{country}')
     assert res.status_code == status.HTTP_404_NOT_FOUND
     assert res.json() == f'Stock:{stock} Not Found'
     # 2.invalid country 
     stock = 'ba'
     country = 'united state'
-    res = client.get(f'/profile/{stock}/{country}')
+    res = client.get(f'/summary/{stock}/{country}')
     assert res.status_code == status.HTTP_404_NOT_FOUND
     assert res.json() == f'Country:{country} Not Found'
     # 3.valid data 
     stock = 'ba'
     country = 'united states'
-    res = client.get(f'/profile/{stock}/{country}')
+    res = client.get(f'/summary/{stock}/{country}')
     assert res.status_code == status.HTTP_200_OK
-    assert res.json() == stocks.get_stock_company_profile(stock=stock,country=country)
+    df =  stocks.get_stock_financial_summary(stock=stock,country=country)
+    df = df.reset_index()
+    mylist = []
+    for i in range(len(df)):
+        dict = df.iloc[i].to_dict()
+        date = dict['Date'].to_pydatetime()
+        dict['Date'] = calendar.timegm(date.utctimetuple())
+        mylist.append(dict)
+    assert res.json() == mylist
     # 3.valid data but not exists
     stock = 'ta'
     country = 'argentina'
-    res = client.get(f'/profile/{stock}/{country}')
+    res = client.get(f'/summary/{stock}/{country}')
     assert res.status_code == status.HTTP_404_NOT_FOUND
     assert res.json() == 'Sorry, Data Not Found'
     

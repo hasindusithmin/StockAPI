@@ -1,3 +1,4 @@
+import calendar
 from investpy import stocks
 from fastapi import FastAPI,HTTPException,status
 from fastapi.responses import JSONResponse
@@ -67,6 +68,7 @@ def gen_profile(stock,country):
         return stocks.get_stock_company_profile(stock=stock,country=country)
     except:
         return JSONResponse(content=f'Sorry, Data Not Found',status_code=status.HTTP_404_NOT_FOUND)
+    
 @app.get('/profile/{stock}/{country}')
 def get_profile(stock:str,country:str):
     stock = stock.strip().upper()
@@ -82,3 +84,33 @@ def get_profile(stock:str,country:str):
         return JSONResponse(content=f'Country:{country} Not Found',status_code=status.HTTP_404_NOT_FOUND)
     
     return gen_profile(stock,country)
+
+def gen_summary(stock,country):
+    try:
+        df =  stocks.get_stock_financial_summary(stock=stock,country=country)
+        df = df.reset_index()
+        mylist = []
+        for i in range(len(df)):
+            dict = df.iloc[i].to_dict()
+            date = dict['Date'].to_pydatetime()
+            dict['Date'] = calendar.timegm(date.utctimetuple())
+            mylist.append(dict)
+        return mylist
+    except:
+        return JSONResponse(content=f'Sorry, Data Not Found',status_code=status.HTTP_404_NOT_FOUND)
+
+@app.get('/summary/{stock}/{country}')
+def get_summary(stock:str,country:str):
+    stock = stock.strip().upper()
+    country = country.strip().lower()
+    
+    available_stocks = stocks.get_stocks_list()
+    available_countries = stocks.get_stock_countries()
+    
+    if stock not in available_stocks:
+        return JSONResponse(content=f'Stock:{stock.lower()} Not Found',status_code=status.HTTP_404_NOT_FOUND)
+    
+    if country not in available_countries:
+        return JSONResponse(content=f'Country:{country} Not Found',status_code=status.HTTP_404_NOT_FOUND)
+    
+    return gen_summary(stock,country)
