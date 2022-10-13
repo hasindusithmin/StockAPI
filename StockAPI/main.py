@@ -1,7 +1,7 @@
 import calendar
 from investpy import stocks
 from fastapi import FastAPI,HTTPException,status
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse,RedirectResponse,FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -17,7 +17,11 @@ app.add_middleware(
 
 @app.get("/")
 def root():
-    return JSONResponse(status_code=status.HTTP_200_OK,content="Hello World")
+    return RedirectResponse("/docs")
+
+@app.get("/report")
+def get_test_report():
+    return FileResponse(path='./report.html')
 
 @app.get("/countries")
 def get_countries(sortby:str="asce"):
@@ -143,7 +147,7 @@ def gen_ohlcv(stock,country):
     try:
         return stocks.get_stock_recent_data(stock=stock, country=country, as_json=True)
     except:
-        return JSONResponse(content=f'Sorry, Data Not Found',status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JSONResponse(content=f'Sorry, data is not available at this moment.',status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @app.get('/ohlcv/{stock}/{country}')
