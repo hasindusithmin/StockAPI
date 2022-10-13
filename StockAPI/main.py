@@ -1,11 +1,37 @@
+import json
 import calendar
 from investpy import stocks
 from fastapi import FastAPI,HTTPException,status
 from fastapi.responses import JSONResponse,RedirectResponse,FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from details import (
+    get_test_report,
+    get_countries,
+    get_stock,
+    get_active_countries,
+    get_profile,
+    get_summary,
+    get_info,
+    get_ohlcv,
+    get_overview
+)
 
+description = '''
 
-app = FastAPI(title="StockAPI")
+![stock market](https://i.ibb.co/2Sp3ySz/stocks.jpg)
+
+### using this API, user can:
+- retrieves all the stock data by country.
+- retrieves countries where a particular stock asset is active.
+- retrieves a listing with all the available countries from where stocks can be retrieved.
+- retrieves the company profile of a stock company.
+- retrieves the financial summary of the introduced stock (by symbol) from the introduced country.
+- retrieves fundamental financial information from the specified stock.
+- retrieves recent historical data from the introduced stock.
+- retrieves an overview containing all the real time data available for the main stocks.
+'''
+
+app = FastAPI(title="StockAPI",description=description,license_info={'name':'find me on Linkedin','url':'https://www.linkedin.com/in/hasindu-sithmin-9a1a12209/'})
 
 app.add_middleware(
     CORSMiddleware,
@@ -19,11 +45,11 @@ app.add_middleware(
 def root():
     return RedirectResponse("/docs")
 
-@app.get("/report")
+@app.get("/report",description=get_test_report)
 def get_test_report():
     return FileResponse(path='report.html')
 
-@app.get("/countries")
+@app.get("/countries",description=get_countries)
 def get_countries(sortby:str="asce"):
     sortby = sortby.lower().strip()
     if sortby not in ['asce','desc']:
@@ -33,7 +59,7 @@ def get_countries(sortby:str="asce"):
         countries.reverse()
     return countries
 
-@app.get("/stock")
+@app.get("/stock",description=get_stock)
 def get_stock(country:str=None):
     if country is not None:
         country = country.lower().strip()
@@ -49,7 +75,7 @@ def get_stock(country:str=None):
     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail='Object is too large.')
 
 
-@app.get('/activecountries/{stock}')
+@app.get('/activecountries/{stock}',description=get_active_countries)
 def get_active_countries(stock:str):
     stock = stock.upper()
     
@@ -73,7 +99,7 @@ def gen_profile(stock,country):
     except:
         return JSONResponse(content=f'Sorry, Data Not Found',status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-@app.get('/profile/{stock}/{country}')
+@app.get('/profile/{stock}/{country}',description=get_profile)
 def get_profile(stock:str,country:str):
     stock = stock.strip().upper()
     country = country.strip().lower()
@@ -103,7 +129,7 @@ def gen_summary(stock,country):
     except:
         return JSONResponse(content=f'Sorry, Data Not Found',status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@app.get('/summary/{stock}/{country}')
+@app.get('/summary/{stock}/{country}',description=get_summary)
 def get_summary(stock:str,country:str):
     stock = stock.strip().upper()
     country = country.strip().lower()
@@ -127,7 +153,7 @@ def gen_info(stock,country):
         return JSONResponse(content=f'Sorry, Data Not Found',status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@app.get('/info/{stock}/{country}')
+@app.get('/info/{stock}/{country}',description=get_info)
 def get_info(stock:str,country:str):
     stock = stock.strip().upper()
     country = country.strip().lower()
@@ -145,12 +171,13 @@ def get_info(stock:str,country:str):
 
 def gen_ohlcv(stock,country):
     try:
-        return stocks.get_stock_recent_data(stock=stock, country=country, as_json=True)
+        data = stocks.get_stock_recent_data(stock=stock, country=country, as_json=True)
+        return json.loads(data)
     except:
         return JSONResponse(content=f'Sorry, data is not available at this moment.',status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@app.get('/ohlcv/{stock}/{country}')
+@app.get('/ohlcv/{stock}/{country}',description=get_ohlcv)
 def get_ohlcv(stock:str,country:str):
     stock = stock.strip().upper()
     country = country.strip().lower()
@@ -173,7 +200,7 @@ def gen_overview(country):
         return JSONResponse(content=f'Sorry, Data Not Found',status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@app.get('/overview/{country}')
+@app.get('/overview/{country}',description=get_overview)
 def get_overview(country:str):
     country = country.strip().lower()
     available_countries = stocks.get_stock_countries()
