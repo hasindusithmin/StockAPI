@@ -21,7 +21,7 @@ def root():
 
 @app.get("/report")
 def get_test_report():
-    return FileResponse(path='./report.html')
+    return FileResponse(path='report.html')
 
 @app.get("/countries")
 def get_countries(sortby:str="asce"):
@@ -46,7 +46,7 @@ def get_stock(country:str=None):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail=detail)
         else:
             return stocks.get_stocks_dict(country=country)
-    return stocks.get_stocks_dict()
+    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail='Object is too large.')
 
 
 @app.get('/activecountries/{stock}')
